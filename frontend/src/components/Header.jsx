@@ -15,8 +15,8 @@ const Header = ({ onRequestProposal }) => {
   }, []);
 
   const navLinks = [
-    { label: 'Services', href: '#services' },
     { label: 'Projects', href: '#projects' },
+    { label: 'Services', href: '#services' },
     { label: 'Process', href: '#process' },
     { label: 'Contact', href: '#contact-form' }
   ];

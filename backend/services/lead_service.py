@@ -5,9 +5,9 @@ logger = logging.getLogger(__name__)
 
 def calculate_priority(budget: str) -> str:
     """Calculate lead priority based on budget"""
-    if "50k+" in budget or "€50k+" in budget:
+    if "£30k+" in budget or "30k+" in budget:
         return "high"
-    elif "20-50k" in budget or "€20-50k" in budget:
+    elif "£15-30k" in budget or "15-30k" in budget:
         return "medium"
     else:
         return "low"

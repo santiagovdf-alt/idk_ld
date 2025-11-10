@@ -7,7 +7,7 @@ export const mockData = {
     ctaPrimary: "Request a Consultation",
     ctaSecondary: "Contact on WhatsApp",
     caption: "From empty room to finished vision — see how we transform spaces before they exist.",
-    offer: "🎁 Free Room Design: Get a complimentary 3D design of one room when you book your first consultation (limited-time offer)."
+    offer: "Free Room Design: Get a complimentary 3D design of one room when you book your first consultation (limited-time offer)."
   },
   
   trustSignals: {
