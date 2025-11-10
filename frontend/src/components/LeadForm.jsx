@@ -55,6 +55,10 @@ const LeadForm = () => {
 
     try {
       // Format for backend
+      // Parse spaceSize correctly (extract first number from ranges like "50-100m²")
+      const spaceSizeMatch = formData.spaceSize.match(/\d+/);
+      const parsedSpaceSize = spaceSizeMatch ? parseInt(spaceSizeMatch[0]) : 100;
+
       const submitData = {
         name: formData.name,
         company: formData.serviceTypes.join(', '),
@@ -62,19 +66,24 @@ const LeadForm = () => {
         phone: formData.phone,
         city: formData.city,
         projectType: formData.projectType,
-        spaceSize: parseInt(formData.spaceSize.replace(/\D/g, '')) || 100,
+        spaceSize: parsedSpaceSize,
         budget: formData.budget,
         timeline: formData.timeline,
         message: `Services: ${formData.serviceTypes.join(', ')}\n\n${formData.message}`
       };
 
+      console.log('Submitting to:', `${API}/leads`);
+      console.log('Submit data:', submitData);
+
       const response = await axios.post(`${API}/leads`, submitData);
-      
+
+      console.log('Response:', response.data);
+
       if (response.data.success) {
         toast.success("Request Submitted!", {
           description: "We'll contact you within 24 hours to discuss your project.",
         });
-        
+
         // Reset form
         setFormData({
           name: '',
@@ -91,8 +100,13 @@ const LeadForm = () => {
       }
     } catch (error) {
       console.error('Lead submission error:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+
+      const errorMessage = error.response?.data?.detail || "Please try again or contact us directly via WhatsApp.";
+
       toast.error("Submission Failed", {
-        description: "Please try again or contact us directly via WhatsApp.",
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
