@@ -9,7 +9,10 @@ import { Checkbox } from './ui/checkbox';
 import { Send } from 'lucide-react';
 import { mockData } from '../mock';
 import { toast } from 'sonner';
-import { supabase } from '../lib/supabaseClient';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const LeadForm = () => {
   const [formData, setFormData] = useState({
@@ -42,82 +45,54 @@ const LeadForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (formData.serviceTypes.length === 0) {
       toast.error("Please select at least one service");
       return;
     }
-
+    
     setLoading(true);
 
     try {
-      // Parse spaceSize correctly (extract first number from ranges like "50-100m²")
-      const spaceSizeMatch = formData.spaceSize.match(/\d+/);
-      const parsedSpaceSize = spaceSizeMatch ? parseInt(spaceSizeMatch[0]) : 100;
-
-      // Calculate priority based on budget
-      let priority = 'low';
-      if (formData.budget.includes('£30k+') || formData.budget.includes('30k+')) {
-        priority = 'high';
-      } else if (formData.budget.includes('£15-30k') || formData.budget.includes('15-30k')) {
-        priority = 'medium';
-      }
-
+      // Format for backend
       const submitData = {
         name: formData.name,
-        services_interested: formData.serviceTypes.join(', '),
+        company: formData.serviceTypes.join(', '),
         email: formData.email,
         phone: formData.phone,
         city: formData.city,
-        project_type: formData.projectType,
-        space_size: parsedSpaceSize,
+        projectType: formData.projectType,
+        spaceSize: parseInt(formData.spaceSize.replace(/\D/g, '')) || 100,
         budget: formData.budget,
         timeline: formData.timeline,
-        message: formData.message || '',
-        status: 'new',
-        priority: priority
+        message: `Services: ${formData.serviceTypes.join(', ')}\n\n${formData.message}`
       };
 
-      console.log('Submitting to Supabase:', submitData);
-
-      // Insert data into Supabase
-      const { data, error } = await supabase
-        .from('leads')
-        .insert([submitData])
-        .select();
-
-      if (error) {
-        throw error;
+      const response = await axios.post(`${API}/leads`, submitData);
+      
+      if (response.data.success) {
+        toast.success("Request Submitted!", {
+          description: "We'll contact you within 24 hours to discuss your project.",
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          city: '',
+          serviceTypes: [],
+          projectType: '',
+          spaceSize: '',
+          budget: '',
+          timeline: '',
+          message: ''
+        });
       }
-
-      console.log('Supabase response:', data);
-
-      toast.success("Request Submitted!", {
-        description: "We'll contact you within 24 hours to discuss your project.",
-      });
-
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        city: '',
-        serviceTypes: [],
-        projectType: '',
-        spaceSize: '',
-        budget: '',
-        timeline: '',
-        message: ''
-      });
-
     } catch (error) {
       console.error('Lead submission error:', error);
-      console.error('Error details:', error.message);
-
-      const errorMessage = error.message || "Please try again or contact us directly via WhatsApp.";
-
       toast.error("Submission Failed", {
-        description: errorMessage,
+        description: "Please try again or contact us directly via WhatsApp.",
       });
     } finally {
       setLoading(false);
