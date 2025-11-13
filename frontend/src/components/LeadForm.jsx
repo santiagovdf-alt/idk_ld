@@ -9,7 +9,10 @@ import { Checkbox } from './ui/checkbox';
 import { Send } from 'lucide-react';
 import { mockData } from '../mock';
 import { toast } from 'sonner';
-import { supabase } from '../lib/supabaseClient';
+import axios from 'axios';
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const LeadForm = () => {
   const [formData, setFormData] = useState({
@@ -42,64 +45,54 @@ const LeadForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (formData.serviceTypes.length === 0) {
       toast.error("Please select at least one service");
       return;
     }
-
+    
     setLoading(true);
 
     try {
-      // Format services_interested with all project details
-      const servicesInterested = [
-        `Services: ${formData.serviceTypes.join(', ')}`,
-        formData.spaceSize && `Space Size: ${formData.spaceSize}`,
-        formData.budget && `Budget: ${formData.budget}`,
-        formData.timeline && `Timeline: ${formData.timeline}`,
-        formData.message && `Message: ${formData.message}`
-      ].filter(Boolean).join(' | ');
-
-      // Map to Supabase table schema
+      // Format for backend
       const submitData = {
         name: formData.name,
+        company: formData.serviceTypes.join(', '),
         email: formData.email,
         phone: formData.phone,
         city: formData.city,
-        project_type: formData.projectType,
-        services_interested: servicesInterested
+        projectType: formData.projectType,
+        spaceSize: parseInt(formData.spaceSize.replace(/\D/g, '')) || 100,
+        budget: formData.budget,
+        timeline: formData.timeline,
+        message: `Services: ${formData.serviceTypes.join(', ')}\n\n${formData.message}`
       };
 
-      const { data, error } = await supabase
-        .from('leads')
-        .insert([submitData])
-        .select();
-
-      if (error) {
-        throw error;
+      const response = await axios.post(`${API}/leads`, submitData);
+      
+      if (response.data.success) {
+        toast.success("Request Submitted!", {
+          description: "We'll contact you within 24 hours to discuss your project.",
+        });
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          city: '',
+          serviceTypes: [],
+          projectType: '',
+          spaceSize: '',
+          budget: '',
+          timeline: '',
+          message: ''
+        });
       }
-
-      toast.success("Request Submitted!", {
-        description: "We'll contact you within 24 hours to discuss your project.",
-      });
-
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        city: '',
-        serviceTypes: [],
-        projectType: '',
-        spaceSize: '',
-        budget: '',
-        timeline: '',
-        message: ''
-      });
     } catch (error) {
       console.error('Lead submission error:', error);
       toast.error("Submission Failed", {
-        description: error.message || "Please try again or contact us directly via WhatsApp.",
+        description: "Please try again or contact us directly via WhatsApp.",
       });
     } finally {
       setLoading(false);
