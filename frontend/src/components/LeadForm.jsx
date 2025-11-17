@@ -78,6 +78,11 @@ const LeadForm = () => {
         throw error;
       }
 
+      // Track conversion in Google Analytics
+      if (window.gtag_report_conversion_consultation) {
+        window.gtag_report_conversion_consultation();
+      }
+
       toast.success("Request Submitted!", {
         description: "We'll contact you within 24 hours to discuss your project.",
       });

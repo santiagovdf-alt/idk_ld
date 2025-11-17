@@ -24,6 +24,10 @@ function App() {
   };
 
   const handleWhatsApp = () => {
+    // Track conversion in Google Analytics
+    if (window.gtag_report_conversion_whatsapp) {
+      window.gtag_report_conversion_whatsapp();
+    }
     const message = encodeURIComponent('Hello! I\'d like to discuss a 3D interior design project.');
     window.open(`https://wa.me/${mockData.contact.whatsapp.replace(/[^0-9]/g, '')}?text=${message}`, '_blank');
   };
