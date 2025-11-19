@@ -276,6 +276,15 @@ const LeadForm = () => {
               <Button
                 type="submit"
                 disabled={loading}
+                onClick={() => {
+                  console.log('Button clicked - attempting to track consultation conversion');
+                  if (window.gtag_report_conversion_consultation) {
+                    console.log('Calling gtag_report_conversion_consultation from button click');
+                    window.gtag_report_conversion_consultation();
+                  } else {
+                    console.warn('gtag_report_conversion_consultation function not found on button click');
+                  }
+                }}
                 className="w-full bg-gradient-to-r from-[#2E404F] to-[#1F2B35] hover:from-[#1F2B35] hover:to-[#2E404F] text-white font-semibold py-6 text-lg rounded-lg transition-all duration-300 hover:shadow-xl"
               >
                 {loading ? 'Submitting...' : 'Request a Consultation'}
